@@ -1,0 +1,13 @@
+name = "GridMethod"
+uuid = "86dfab32-2c2d-4347-886c-662f6c611e7a"
+authors = ["Laura Brustenga i Moncusí <brust@math.ku.dk> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
