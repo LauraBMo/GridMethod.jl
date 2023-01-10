@@ -9,7 +9,7 @@ Returns a random polynomial with coefficients of type `T` in variables `X` with 
  - `coeffs`: A function that takes a tuple of exponents and returns a coefficient.
  - `n`: The number of variables.
 """
-function rand_poly(::Type{T}, X, d; coeffs = I -> randn(T), n = length(X))
+function rand_poly(::Type{T}, X, d; coeffs = I -> randn(T), n = length(X)) where T
     sum(I -> coeffs(I)*_monomial(X, I), Combinatorics.multiexponents(n, d))
 end
 rand_poly(X, d; coeffs = I -> randn(Float64), n = length(X)) =
@@ -20,7 +20,7 @@ rand_poly(X, d; coeffs = I -> randn(Float64), n = length(X)) =
 
 Returns the identity matrix of size `n` and type `T`.
 """
-function Id(::Type{T}, n)
+function Id(::Type{T}, n) where T
     LA.Diagonal(ones(T, n))
 end
 Id(n) = Id(Float64, n)
