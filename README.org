@@ -1,7 +1,7 @@
 * GridMethod
-[[https://LauraBMo.github.io/GridMethod.jl/stable/][[[https://LauraBMo.github.io/GridMethod.jl/stable/][https://img.shields.io/badge/docs-stable-blue.svg]]]]
-[[https://LauraBMo.github.io/GridMethod.jl/dev/][[[https://LauraBMo.github.io/GridMethod.jl/dev/][https://img.shields.io/badge/docs-dev-blue.svg]]]]
-[[https://github.com/LauraBMo/GridMethod.jl/actions/workflows/CI.yml?query=branch%3Amain][[[https://github.com/LauraBMo/GridMethod.jl/actions/workflows/CI.yml?query=branch%3Amain][https://github.com/LauraBMo/GridMethod.jl/actions/workflows/CI.yml/badge.svg?branch=main]]]]
-[[https://codecov.io/gh/LauraBMo/GridMethod.jl][[[https://codecov.io/gh/LauraBMo/GridMethod.jl][https://codecov.io/gh/LauraBMo/GridMethod.jl/branch/main/graph/badge.svg]]]]
+[[https://LauraBMo.github.io/GridMethod.jl/stable/][https://img.shields.io/badge/docs-stable-blue.svg]]
+[[https://LauraBMo.github.io/GridMethod.jl/dev/][https://img.shields.io/badge/docs-dev-blue.svg]]
+[[https://github.com/LauraBMo/GridMethod.jl/actions/workflows/CI.yml?query=branch%3Amain][https://github.com/LauraBMo/GridMethod.jl/actions/workflows/CI.yml/badge.svg?branch=main]]
+[[https://codecov.io/gh/LauraBMo/GridMethod.jl][https://codecov.io/gh/LauraBMo/GridMethod.jl/branch/main/graph/badge.svg]]
 
 This is a project aiming at implementing the Grid Method theoretically developed by Bürgisser, Cucker, Krick, Lairez, Shub and Tonelli-Cueto. The aim of this project is to develop parallelizable algorithms for solving real polynomial systems and computing the topology of real algebraic and semialgebraic sets...
