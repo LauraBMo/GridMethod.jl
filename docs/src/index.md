@@ -15,3 +15,7 @@ The aim of this project is to develop parallelizable algorithms for solving real
 ```@autodocs
 Modules = [GridMethod]
 ```
+
+```@autodocs
+Modules = [GridMethod]
+```
