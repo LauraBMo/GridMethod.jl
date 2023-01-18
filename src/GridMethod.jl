@@ -2,34 +2,40 @@ module GridMethod
 
 #Indicate modules for use
 using UnPack: @unpack
-# using LinearAlgebra: dot
-# using Parameters: @unpack
 # using DocStringExtensions: SIGNATURES, TYPEDEF
-# using Requires # for macro @require
 # using RecipesBase # For Plots recipes
 
 using Combinatorics
 import LinearAlgebra as LA
 
 #Include files with extracode
-export rand_poly, Wnorm_poly, Wnorm, K
-include("utils.jl")
+export rand_poly
+include("Utils.jl")
 
-include("HanSubdivision.jl")
-include("cube_tree.jl")
+export norm1, C, Wnorm, K
+include("Norms.jl")
+
+include("Tree.jl")
+
+include("Grid_Refine.jl")
+include("CubeHan.jl")
 
 
-# import HomotopyContinuation as HC
-import HomotopyContinuation.ModelKit as MK
-include("normsHC.jl")
 
+using Requires
 
-# include("normsSym.jl")
-
-import Symbolics
-import ModelingToolkit as MTK
-include("normsMTK.jl")
-
+function __init__()
+    @require HomotopyContinuation = "f213a82b-91d6-5c5d-acf7-10f1c761b327" begin
+        # import .HomotopyContinuation as HC
+        import .HomotopyContinuation.ModelKit as MK
+        include("NormsHC.jl")
+    end
+    @require ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78" begin
+        @eval import Symbolics
+        import .ModelingToolkit as MTK
+        include("NormsMTK.jl")
+    end
+end
 
 
 end

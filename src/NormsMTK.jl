@@ -13,7 +13,7 @@ _get_vars(sys::MTK.NonlinearSystem) = MTK.states(sys)
 _get_polys(sys::MTK.NonlinearSystem) = [Symbolics.Num(eq.rhs) for eq in MTK.equations(sys)]
 _degrees(sys::MTK.NonlinearSystem) = Symbolics.degree.(_get_polys(sys))
 
-function K(sys::MTK.NonlinearSystem)
+function _eval_and_J(sys::MTK.NonlinearSystem; kwargs...)
     f = MTK.NonlinearFunction(sys;# dvs = states(sys), ps = parameters(sys), u0 = nothing;
                               version = nothing,
                               jac = true,
@@ -21,7 +21,5 @@ function K(sys::MTK.NonlinearSystem)
                               sparse = false,
                               simplify = false,
                               )
-    eval_and_J(x) = (x, f.f(x,[]), f.jac(x,[]))
-    Wnorm₀, Δm1₀ = Wnorm(sys), Δm1(sys)
-    return K(Wnorm₀, Δm1₀)∘eval_and_J
+    return x -> (x, f.f(x,[]), f.jac(x,[]))
 end
