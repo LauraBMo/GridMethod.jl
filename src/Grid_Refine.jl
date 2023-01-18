@@ -1,4 +1,4 @@
-# This code is written in Julia and defines several functions that are used to compute the refinement of an initial grid satisfying the Han condition.
+# This code is written in Julia and defines several functions that are used to compute the refinement of an initial grid satisfying a condition (e.g., Han condition).
 
 # The grid_point struct represents a point in the grid, with fields x, fx, and step. x is a vector of coordinates, fx is the value of the function at that point, and step is an integer representing the step at which the point was added to the grid. There are also several functions defined for creating and manipulating grid_point objects:
 
@@ -21,8 +21,6 @@
 # This process continues until G is empty.
 
 # The refine_grid! function is similar to refine_grid, but instead of returning a new list of grid_point objects, it modifies the input list G in place.
-
-# The Han_min function takes a list H of grid_point objects, a parameter L, and a parameter C, and returns the minimum function value in H (scaled by a factor of γ = 1 - inv(C) * L), as well as the index at which this minimum value was found.
 
 """
     grid_point{T}
@@ -103,62 +101,6 @@ function Base.show(io::IO, point::grid_point)
 end
 
 """
-    cube_nthinitgrid(T=Float64, fun, dim, n; ratio = 0.5, root = tree_root(T, dim),
-                     coord_opt = coord_opt(T, dim))
-
-Returns a list of `grid_point` objects that form an initial grid with `2^n` points in each dimension.
-
-# Arguments:
- - `T` (optional): Numeric type to represent the coordinates of the points.
- - `fun`: The function to be evaluated at each point in the grid.
- - `dim`: The dimension of the grid.
- - `n`: The number of times the grid should be recursively divided.
-
-# Keyword arguments:
- - `ratio`: The ratio between the length of a branch and of the previous.
- - `root`: The root of the grid (a point in `dim`-dimensional space).
- - `coord_opt`: The possible directions in which the next points can be generated.
-"""
-function cube_nthinitgrid(::Type{T}, fun, dim, n; ratio = 0.5, root = tree_root(T, dim),
-                          coord_opt = coord_opt(T, dim)) where T
-    tree = tree_nthleaves(dim, n; ratio = ratio, root = root, coord_opt = coord_opt)
-    return [grid_point(fun, p, n) for p in tree]
-end
-cube_nthinitgrid(fun, dim, n; ratio = 0.5, root = tree_root(dim), coord_opt = coord_opt(dim)) =
-    cube_nthinitgrid(Float64, fun, dim, n; ratio = ratio, root = root, coord_opt = coord_opt)
-
-"""
-    cube_pushsubdivided!(G, p, step, fun; dim = length(p),
-                         coord_opt = coord_opt(eltype(p), dim))
-
-Pushes the points obtained by subdividing the region around `p` into `G`.
-
-# Arguments:
- - `G`: A list of `grid_point` objects, where to push the new points.
- - `p`: A point in `dim`-dimensional space.
- - `step`: The step at which the point was added to the grid.
- - `fun`: The function to be evaluated at each point.
-
-# Keyword arguments:
- - `dim`: The dimension of the grid.
- - `coord_opt`: The possible directions in which the next points can be generated.
-"""
-function cube_pushsubdivided!(G, p, step, fun; dim = length(p),
-                              coord_opt = coord_opt(eltype(p), dim))
-    ratio = eltype(p)(step_to_ratio(step + 1))
-    for q in tree_nextleaves(p, ratio; dim = dim, coord_opt = coord_opt)
-        push!(G, grid_point(fun, q, step + 1))
-    end
-end
-
-"""
-    _isHan(fx, step, C)
-
-Returns `true` if `C * step_to_ratio(step) < fx`, and `false` otherwise.
-"""
-_isHan(fx, step, C) = C * step_to_ratio(step) < fx
-
-"""
     refine_grid(T=Float64, fun, C, m, dim; step₀ = Int(ceil(log2(C))),
                 G = cube_nthinitgrid(T, fun, dim, step₀), isfine = _isHan,
                 pushsubdivided! = cube_pushsubdivided!)
@@ -226,18 +168,6 @@ function refine_grid!(G, fun, C, m, dim; isfine = _isHan,
                       pushsubdivide! = cube_pushsubdivided!)
     return G = refine_grid(fun, C, m, dim; step₀ = 0, G = G, isfine = isfine,
                            pushsubdivide! = pushsubdivide!)
-end
-
-"""
-    Han_min(H, L, C)
-
-Returns the minimum function value in `H` scaled by a factor of `γ`, where `γ = 1 - inv(C) * L`.
-"""
-function Han_min(H, L, C)
-    L < C || @warn "Required condition 0<1-inv(C)L not satisfied." L, C, inv(C) * L
-    γ = 1 - inv(C) * L # This is positive because precondition L < C
-    minfx, n = findmin(fpoint, H)
-    return γ * minfx, n
 end
 
 #### Original code below:

@@ -5,61 +5,58 @@
 # The tree_nthleaves function generates the nth level leaves of a tree fractal with dim dimensions. It generates new points for the fractal iteratively.
 
 """
-    tree_root(::Type{T}, dim) where {T} = [zeros(T, dim)]
+    tree_root(::Type{T}=Float64, dim)
 
-Returns an array containing a single zero-vector of length `dim` and type `T`, which defaults to `Float64`.
-It is meant to be used as the root node of a tree fractal.
+Returns an array containing a single zero-vector of length `dim` and type `T`.
+It is meant to be the root node of a tree fractal.
 """
 tree_root(::Type{T}, dim) where {T} = [zeros(T, dim)]
 tree_root(dim) = tree_root(Float64, dim)
 
 """
-    coord_opt(::Type{T}, dim) where {T} = ntuple(_ -> (one(T), -one(T)), dim)
+    pmones(::Type{T}=Float64, dim)
 
 Returns an iterator which generates all possible `dim`-dimensional vectors that have all components either one or -one.
-The `eltype` of the vector is `T`, which defaults to `Float64`.
 """
-coord_opt(::Type{T}, dim) where {T} = ntuple(_ -> (one(T), -one(T)), dim)
-coord_opt(dim) = coord_opt(Float64, dim)
+pmones(::Type{T}, dim) where {T} = Iterators.ProductIterator(ntuple(_ -> (one(T), -one(T)), dim))
+pmones(dim) = pmones(Float64, dim)
 
 """
-    tree_nextleaves(p, ratio; dim = length(p), coord_opt = coord_opt(eltype(p), dim))
+    tree_nextleaves(p, ratio; dim = length(p), dirs = pmones(eltype(p), dim))
 
 Returns an iterator which generates the next leaves of the tree starting from `p` with a length ratio of `r`.
 
 # Keyword arguments:
  - `dim`: The dimension of the tree.
- - `coord_opt`: The possible directions in which the next leaves can be generated.
+ - `dirs`: The directions in which the next leaves will be generated.
 """
-function tree_nextleaves(p, ratio; dim = length(p), coord_opt = coord_opt(eltype(p), dim))
-    # Generate an iterator of possible directions using coord_opt
-    dir_vec = Iterators.ProductIterator(coord_opt)
+function tree_nextleaves(p, ratio; dim = length(p), dirs = pmones(eltype(p), dim))
     # Define a function that takes a direction vector and returns the next leave in that direction
     f = v -> p + ratio * collect(v)
     # Return an iterator that applies the function f to the direction vectors
-    return Iterators.map(f, dir_vec)
+    return Iterators.map(f, dirs)
 end
 
 """
     tree_nthleaves(dim, n; ratio = 0.5, root = tree_root(dim),
-                   coord_opt = coord_opt(dim))
+                   dirs = pmones(eltype(p), dim))
 
 Computes the `n`th leaves of a 2^`dim`-branched tree in a `dim`-dimensional space, where `dim` is the dimension of the tree (i.e. 2 for a 2D tree, 3 for a 3D tree), and `n` is the number of times the tree should be recursively branched.
 
 # Keyword arguments:
  - `ratio`: The ratio between the length of a branch and of the previous.
  - `root`: The root of the tree (a point in `dim`-dimensional space).
- - `coord_opt`: The possible directions in which the next leaves can be generated.
+ - `dirs`: The possible directions in which the next leaves can be generated.
 """
-function tree_nthleaves(dim, n; ratio = 0.5, root = tree_root(dim),
-                        coord_opt = coord_opt(dim))
+function tree_nthleaves(dim, n; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim))
     tree = root
     r = ratio
     for _ in 1:n
         new_tree = eltype(root)[]
-        for p in tree
-            # Get an iterator of the next leaves of the tree starting from p with a length ratio of r
-            for q in tree_nextleaves(p, r; dim = dim, coord_opt = coord_opt)
+        while !(isempty(tree))
+            p = pop!(tree)
+            # Get an iterator for next leaves on tree starting from p with a length ratio of r
+            for q in tree_nextleaves(p, r; dim = dim, dirs = dirs)
                 push!(new_tree, q)
             end
         end

@@ -12,17 +12,14 @@ _get_vars(F::MK.System) = MK.variables(F)
 _get_polys(F::MK.System) = MK.expressions(F)
 _degrees(F::MK.System) = MK.degrees(F)
 
-# K(system, vars) = x -> K(x, K_prepare(system, vars))
-function K(F::MK.System; compiled = true)
-    f = compiled ? MK.CompiledSystem(F; optimizations = true) : MK.InterpretedSystem(F; optimizations = true)
-    Wnorm₀, Δm1₀ = Wnorm(F), Δm1(F)
-    function eval_and_J(x)
+function _eval_and_J(F::MK.System; compiled = true, kwargs...)
+    f = compiled ? MK.CompiledSystem(F; optimizations=true) : MK.InterpretedSystem(F; optimizations=true)
+    return x -> begin
         u = Vector{Any}(undef, size(F, 1))
         U = Matrix{Any}(undef, size(F))
         MK.evaluate_and_jacobian!(u, U, f, x, nothing)
         Jx = MK.to_smallest_eltype(U)
         fx = MK.to_smallest_eltype(u)
-        return (x, fx, Jx)
+        (x, fx, Jx)
     end
-    return K(Wnorm₀, Δm1₀)∘eval_and_J
 end
