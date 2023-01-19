@@ -15,7 +15,11 @@ makedocs(;
         assets=String[],
     ),
     pages=[
-        "Home" => "index.md",
+        "Introduction" => "index.md",
+        "Problem formulation" => [
+            "Modeling Kits" => "modelingkits.md",
+            ],
+        "Tree fractal" => "tree.md",
     ],
 )
 

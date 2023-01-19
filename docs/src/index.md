@@ -9,13 +9,38 @@ Documentation for [GridMethod](https://github.com/LauraBMo/GridMethod.jl).
 This is a project aiming at implementing the Grid Method theoretically developed by Bürgisser, Cucker, Krick, Lairez, Shub and Tonelli-Cueto. 
 The aim of this project is to develop parallelizable algorithms for solving real polynomial systems and computing the topology of real algebraic and semialgebraic sets...
 
-```@index
+```@contents
+```
+## Contents
+
+**Problem formulation**
+```@contents
+Pages = [
+    "modelingkits.md",
+]
+Depth = 2
 ```
 
-```@autodocs
-Modules = [GridMethod]
+**The grid**
+```@contents
+Pages = [
+    "grid_refine.md",
+    "cubeHan.md",
+]
+Depth = 2
 ```
 
-```@autodocs
-Modules = [GridMethod]
+# Norms and constants
+Norms.jl
+Const.jl
+
+**Cross-tree fractal**
+```@contents
+Pages = [
+    "tree.md",
+]
+Depth = 2
 ```
+
+# Utils
+Utils.jl
