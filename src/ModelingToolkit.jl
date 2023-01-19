@@ -1,7 +1,7 @@
 ## This file contains functions for interact with the ModelingToolkit.jl (MTK) package.
 
 _degree(M::Symbolics.Symbolic, v::AbstractVector) = [Symbolics.degree(M, x) for x in v]
-function exposcoeffs(poly::Symbolics.Num;
+function terms(poly::Symbolics.Num;
                       vars = Symbolics.get_variables(poly),
                       expanded = false,
                       )

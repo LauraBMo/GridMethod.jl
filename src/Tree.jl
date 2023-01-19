@@ -24,7 +24,7 @@ pmones(dim) = pmones(Float64, dim)
 """
     tree_nextleaves(p, ratio; dim = length(p), dirs = pmones(eltype(p), dim))
 
-Returns an iterator which generates the next leaves of the tree starting from `p` with a length ratio of `r`.
+Returns an iterator which generates the next leaves of the tree starting from `p` with a length ratio of `ratio`.
 
 # Keyword arguments:
  - `dim`: The dimension of the tree.
@@ -38,29 +38,31 @@ function tree_nextleaves(p, ratio; dim = length(p), dirs = pmones(eltype(p), dim
 end
 
 """
-    tree_nthleaves(dim, n; ratio = 0.5, root = tree_root(dim),
-                   dirs = pmones(eltype(p), dim))
+    tree_nexttree(tree, ratio, dim, dirs)
 
-Computes the `n`th leaves of a 2^`dim`-branched tree in a `dim`-dimensional space, where `dim` is the dimension of the tree (i.e. 2 for a 2D tree, 3 for a 3D tree), and `n` is the number of times the tree should be recursively branched.
+Returns the next iteration of tree `tree` with a ratio of length `ratio`.
+Where `dim` is the dimension of the tree, and `dirs` the directions generating next leaves.
+"""
+function tree_nexttree(tree, ratio, dim, dirs)
+    return [q for p in tree for q in tree_nextleaves(p, ratio; dim = dim, dirs = dirs)]
+end
+
+"""
+    tree_nthleaves(dim, N; ratio = 0.5, root = tree_root(dim),
+                   dirs = pmones(dim))
+
+Computes the `N`th leaves of a 2^`dim`-branched tree in a `dim`-dimensional space, where `dim` is the dimension of the tree (i.e. 2 for a 2D tree, 3 for a 3D tree), and `n` is the number of times the tree should be recursively branched.
 
 # Keyword arguments:
  - `ratio`: The ratio between the length of a branch and of the previous.
  - `root`: The root of the tree (a point in `dim`-dimensional space).
  - `dirs`: The possible directions in which the next leaves can be generated.
 """
-function tree_nthleaves(dim, n; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim))
+function tree_nthleaves(dim, N; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim))
     tree = root
     r = ratio
-    for _ in 1:n
-        new_tree = eltype(root)[]
-        while !(isempty(tree))
-            p = pop!(tree)
-            # Get an iterator for next leaves on tree starting from p with a length ratio of r
-            for q in tree_nextleaves(p, r; dim = dim, dirs = dirs)
-                push!(new_tree, q)
-            end
-        end
-        tree = new_tree
+    for _ in 1:N
+        tree = tree_nexttree(tree, r, dim, dirs)
         r *= ratio
     end
     return tree

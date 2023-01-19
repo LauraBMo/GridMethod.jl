@@ -14,6 +14,7 @@ include("Utils.jl")
 
 export norm1, C, Wnorm, K
 include("Norms.jl")
+include("Const.jl")
 
 include("Tree.jl")
 

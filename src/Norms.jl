@@ -14,7 +14,7 @@ function norm1_poly(poly;
                     vars,
                     expanded = false,
                     )
-    sum(norm1_term, exposcoeffs(poly; vars = vars, expanded = expanded))
+    sum(norm1_term, terms(poly; vars = vars, expanded = expanded))
 end
 
 """
@@ -53,7 +53,7 @@ function Wnorm_poly(poly;
                     vars,
                     expanded = false,
                     )
-    sum(Wnorm_term, exposcoeffs(poly; vars = vars, expanded = expanded))
+    sum(Wnorm_term, terms(poly; vars = vars, expanded = expanded))
 end
 
 """

@@ -17,7 +17,7 @@ rand_poly(X, d; coeffs = I -> randn(Float64), n = length(X)) =
 
 const ε = 1e-6 # bound for meaning zero
 function last_sval(M, ε)
-    U, svals, Vt = LA.svd(M; alg = QRIteration())
+    U, svals, Vt = LA.svd(M; alg = LA.QRIteration())
     # svals = LA.svdvals(M)
     return svals[findlast(>(ε), svals)]
 end
