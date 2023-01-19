@@ -50,8 +50,12 @@ P = plot(1,
          ylim = (-1, 1),
          );
 plot_lines!(P, 4, .5)
-P
+savefig("plot.gif")
+
+nothing
 ```
+
+![](plot.gif)
 
 ## Now adding from file
 
