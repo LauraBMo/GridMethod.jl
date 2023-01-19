@@ -30,10 +30,6 @@ Pages = [
 Depth = 2
 ```
 
-# Norms and constants
-Norms.jl
-Const.jl
-
 **Cross-tree fractal**
 ```@contents
 Pages = [
@@ -42,5 +38,12 @@ Pages = [
 Depth = 2
 ```
 
-# Utils
-Utils.jl
+## Norms and constants
+   
+   Norms.jl
+   Const.jl
+
+
+## Utils
+   
+   Utils.jl
