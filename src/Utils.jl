@@ -76,39 +76,6 @@ function D(Jx, x, n = length(x))
     Jx*(Id(n) - x*transpose(conj(x)))
 end
 
-## For docs
-"""
-    _exposcoeffs(poly; vars, expanded = false)
-
-Returns a list of tuples containing the exponents and coefficients of a polynomial `poly`.
-
-# Keyword arguments:
- - `vars`: The variables of the polynomial.
- - `expanded`: A boolean indicating whether the polynomial should be expanded before extracting the exponents and coefficients.
-"""
-function _exposcoeffs end
-
-"""
-    _get_vars(F)
-
-Returns the variables of a system of polynomials `F`.
-"""
-function _get_vars(F) end
-
-"""
-    _get_polys(F)
-
-Returns the polynomials of a system `F`.
-"""
-function _get_polys end
-
-"""
-    _degrees(F)
-
-Returns the degrees of a system of polynomials `F`.
-"""
-function _degrees end
-
 # # monomial(X, I) = prod(X.^I)
 
 # function monomial_base(X, d; affine::Bool = false)
