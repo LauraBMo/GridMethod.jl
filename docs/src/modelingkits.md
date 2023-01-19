@@ -2,8 +2,8 @@
 
 We do not implement a modeling language.
 Instead, we offer easily to build compatibility with your favorite system.
-Available packages are [HomotopyContinuation.ModelKit.jl](https://www.juliahomotopycontinuation.org/) and [ModelingToolkit.jl](https://github.com/SciML/ModelingToolkit.jl).
-See their config files [HC.ModelKit.jl](/src/HC.ModelKit.jl) and [ModelingToolkit.jl](/src/ModelingToolkit.jl).
+Available packages are [HomotopyContinuation.ModelKit.jl](https://www.juliahomotopycontinuation.org/HomotopyContinuation.jl/stable/model_kit/#ModelKit/) and [ModelingToolkit.jl](https://github.com/SciML/ModelingToolkit.jl).
+See their configuration files [HC.ModelKit.jl](https://github.com/LauraBMo/GridMethod.jl/blob/main/src/HC.ModelKit.jl) and [ModelingToolkit.jl](https://github.com/LauraBMo/GridMethod.jl/blob/main/src/ModelingToolkit.jl).
 
 ```@autodocs
 Modules = [GridMethod]
