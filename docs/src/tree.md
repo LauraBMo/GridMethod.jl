@@ -31,17 +31,22 @@ Code used to generate image [Tree fractal](@ref).
 using Plots
 using GridMethod
 
-function plot_lines!(P, N, r)
-    HH = [GridMethod.tree_nthleaves(2, i) for i in 0:N]
-    r₀ = r
-    @gif for H in HH
-        for p in H
-            for q in GridMethod.tree_nextleaves(p, r₀)
+function plot_lines!(P, N, r, w, dw, c, dc)
+    r₀, w₀, c₀ = r, w, c
+    tree = Tree()
+    dirs = pmones()
+    @gif for _ in 0:(N-1)
+        new_tree = tree_nexttree(tree, r₀, dirs)
+        for (i, p) in tree
+            for q in tree_findnextleaves(i, new_tree)
                 pp = [p, q, [NaN, NaN]]
-                plot!(P, first.(pp), last.(pp), line = (:black, 1, 0.6))
+                plot!(P, first.(pp), last.(pp), line = (:black, w₀, c₀))
             end
         end
         r₀ *= r
+        w₀ += dw
+        c₀ += dc
+        tree = new_tree
     end every 1
 end
 
@@ -51,5 +56,5 @@ P = plot(1,
          xlim = (-1, 1),
          ylim = (-1, 1),
          );
-plot_lines!(P, 4, .5)
+plot_lines!(P, 7, .5, 2.3, -.4, .75, -.11)
 ```
