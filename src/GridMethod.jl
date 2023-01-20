@@ -17,6 +17,8 @@ include("Norms.jl")
 include("Const.jl")
 
 export tree_root, pmones, tree
+
+export Tree, pmones, tree, tree_nexttree, tree_findnextleaves
 include("Tree.jl")
 
 include("Grid_Refine.jl")
