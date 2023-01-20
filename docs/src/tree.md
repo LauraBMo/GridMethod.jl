@@ -9,7 +9,7 @@ Plots.reset_defaults()
   The `tree` function generates the Nth level leaves of a tree fractal with dim dimensions. 
   It generates new points for the fractal iteratively.
   
-## Tree fractal
+#### Tree fractal
 
   ![Tree fractal in 2D](./assets/tree_lines.gif)
 
