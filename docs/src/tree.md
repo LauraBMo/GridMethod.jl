@@ -11,7 +11,7 @@ Plots.reset_defaults()
   
 ## Tree fractal
 
-  ![Tree fractal in 2D](./assets/tree_lines.gif "2D tree")
+  ![Tree fractal in 2D](./assets/tree_lines.gif)
 
   *See [Image code](@ref)*
 
