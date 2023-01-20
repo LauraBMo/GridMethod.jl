@@ -1,9 +1,4 @@
 
-# The tree_root function creates a list containing a single element, which is an array of zeros with dim dimensions. This is meant to be used as the root node of a tree fractal.
-# The coord_opt function returns a tuple of pairs, with dim pairs in total. Each pair consists of one and -one of the specified type. This is meant to be used to define the possible directions in which the branches of the tree fractal can extend.
-# The tree_nextleaves function takes in a point p and a ratio ratio, and returns an iterator that generates all possible next points for the tree fractal, based on the coord_opt tuple.
-# The tree_nthleaves function generates the nth level leaves of a tree fractal with dim dimensions. It generates new points for the fractal iteratively.
-
 """
     tree_root(::Type{T}=Float64, dim)
 
@@ -40,7 +35,7 @@ end
 """
     tree_nexttree(tree, ratio, dim, dirs)
 
-Returns the next iteration of tree `tree` with a ratio of length `ratio`.
+Returns the next iteration of `tree` with a ratio of length `ratio`.
 Where `dim` is the dimension of the tree, and `dirs` the directions generating next leaves.
 """
 function tree_nexttree(tree, ratio, dim, dirs)
@@ -48,8 +43,8 @@ function tree_nexttree(tree, ratio, dim, dirs)
 end
 
 """
-    tree_nthleaves(dim, N; ratio = 0.5, root = tree_root(dim),
-                   dirs = pmones(dim))
+    tree(::Type{T}=Float64, dim, N; ratio = 0.5, root = tree_root(T, dim),
+         dirs = pmones(T, dim))
 
 Computes the `N`th leaves of a 2^`dim`-branched tree in a `dim`-dimensional space, where `dim` is the dimension of the tree (i.e. 2 for a 2D tree, 3 for a 3D tree), and `n` is the number of times the tree should be recursively branched.
 
@@ -58,7 +53,7 @@ Computes the `N`th leaves of a 2^`dim`-branched tree in a `dim`-dimensional spac
  - `root`: The root of the tree (a point in `dim`-dimensional space).
  - `dirs`: The possible directions in which the next leaves can be generated.
 """
-function tree_nthleaves(dim, N; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim))
+function tree(::Type{T}, dim, N; ratio = 0.5, root = tree_root(T, dim), dirs = pmones(T, dim)) where T
     tree = root
     r = ratio
     for _ in 1:N
@@ -67,3 +62,5 @@ function tree_nthleaves(dim, N; ratio = 0.5, root = tree_root(dim), dirs = pmone
     end
     return tree
 end
+tree(dim, N; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim)) =
+    tree(Float64, dim, N; ratio = ratio, root = root, dirs = dirs)

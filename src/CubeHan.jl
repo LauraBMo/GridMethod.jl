@@ -20,7 +20,7 @@ Returns a list of `grid_point` objects that form an initial grid with `2^n` poin
 """
 function cube_nthinitgrid(::Type{T}, fun, dim, n; ratio = 0.5, root = tree_root(T, dim),
                           dirs = pmones(T, dim)) where T
-    tree = tree_nthleaves(dim, n; ratio = ratio, root = root, dirs = dirs)
+    tree = tree(dim, n; ratio = ratio, root = root, dirs = dirs)
     return [grid_point(fun, p, n) for p in tree]
 end
 cube_nthinitgrid(fun, dim, n; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim)) =

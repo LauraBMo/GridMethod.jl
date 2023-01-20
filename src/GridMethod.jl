@@ -16,6 +16,7 @@ export norm1, C, Wnorm, K
 include("Norms.jl")
 include("Const.jl")
 
+export tree_root, pmones, tree
 include("Tree.jl")
 
 include("Grid_Refine.jl")
