@@ -16,9 +16,7 @@ export norm1, C, Wnorm, K
 include("Norms.jl")
 include("Const.jl")
 
-export tree_root, pmones, tree
-
-export Tree, pmones, tree, tree_nexttree, tree_findnextleaves
+export uptree!, tree, findnextleaves
 include("Tree.jl")
 
 include("Grid_Refine.jl")

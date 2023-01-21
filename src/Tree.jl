@@ -1,36 +1,73 @@
 
+mutable struct TreeData{T, d}
+    nodes::Vector{Vector{T}}
+    iter::Int
+end
+
 """
     Tree{T,d}
 
 Structure representing a tree fractal in `d`-dim space with points of type `T`.
 """
-Base.@kwdef mutable struct Tree{T,d}
-    nodes::Vector{Vector{T}} = [zeros(T, d)]
-    iter::Int = 0
+Base.@kwdef struct Tree{T, d}
+    data::TreeData{T, d} = TreeData{T, d}([zeros(T, d)], zero(Int))
+    ratio::T = inv(one(T)+one(T))
 end
 
-Tree(::Type{T} = Float64, d = 2) where T = Tree{T, d}()
-nodes(tree::Tree) = tree.nodes
-Base.length(tree::Tree) = length(tree.nodes)
-Base.eltype(::Tree{T, d}) where {T, d} = Tuple{Int, Vector{T}}
+## Easily create a root Tree.
+Tree(::Type{T}, d) where T = Tree{T, d}()
+Tree(d::Int = 2) = Tree(Float64, d)
 
-function Base.iterate(tree::Tree, state = 1)
+# Access to Tree info
+nodes(tree::Tree) = tree.data.nodes
+iter(tree::Tree) = tree.data.iter
+ratio(tree::Tree) = tree.ratio
+
+function Base.copy(tree::Tree{T, d}) where {T,d}
+    new_data = TreeData{T, d}(copy(nodes(tree)), copy(iter(tree)))
+    return Tree{T, d}(; data = new_data, ratio = ratio(tree))
+end
+
+factor(tree::Tree) = ratio(tree)^(iter(tree)+one(Int))
+
+"""
+    nextleaves(tree::Tree)
+
+Returns an iterator which generates the directions for the next leaves of the tree.
+"""
+function nextleaves(tree::Tree{T, d}) where {T, d}
+    dirs = Iterators.ProductIterator(ntuple(_ -> (one(T), -one(T)), d))
+    return Iterators.map(v -> factor(tree)*collect(v), dirs)
+end
+
+# Iterate over a Tree `tree`: `(i, p)` where `p` is the `i`-th node of `tree`.
+Base.length(tree::Tree) = length(nodes(tree))
+Base.eltype(::Tree{T, d}) where {T, d} = Tuple{Int, Vector{T}}
+function Base.iterate(tree::Tree, state = one(Int))
     if state > length(tree)
         return nothing
     end
     i = state
-    return (i, nodes(tree)[i]), state + 1
+    return (i, nodes(tree)[i]), state + one(Int)
+end
+
+# Update (compute next iteration) data in a tree:
+upiter!(tree::Tree) = tree.data.iter += one(Int)
+setnodes!(tree::Tree, nodes) = tree.data.nodes = nodes
+
+"""
+    uptree!(tree)
+
+Returns the next iteration of `tree`.
+"""
+function uptree!(tree::Tree)
+    setnodes!(tree, [q for p in nodes(tree) for q in [p] .+ nextleaves(tree)])
+    upiter!(tree)
+    return tree
 end
 
 """
-    pmones(d::Int = 2, ::Type{T} = Float64)
-
-Returns an iterator which generates all possible `d`-dimensional vectors that have all components either one or -one.
-"""
-pmones(d::Int = 2, ::Type{T} = Float64) where {T} = Iterators.ProductIterator(ntuple(_ -> (one(T), -one(T)), d))
-
-"""
-    tree(root::Tree{T, d}, N; ratio = 0.5, dirs = pmones(T, dim))
+    tree(root::Tree, N)
 
 Returns the `N`th leaves of a `2^d`-branched tree in a `d`-dimensional space with root `root`, where `N` is the number of times the root-tree should be recursively branched into directions `dirs`.
 
@@ -38,50 +75,22 @@ Returns the `N`th leaves of a `2^d`-branched tree in a `d`-dimensional space wit
  - `ratio`: The ratio between the length of the recursively branched.
  - `dirs`: The possible directions in which the next leaves can be generated.
 """
-function tree(root::Tree{T, d}, N; ratio = .5, dirs = pmones(T, d)) where {T,d}
-    tree, r = root, ratio
+function tree(root::Tree, N)
+    tree = root
     for _ in 1:N
-        tree = tree_nexttree(tree, r, dirs)
-        r *= ratio
+        uptree!(tree)
     end
     return tree
 end
-tree(d::Integer, N; ratio = .5, dirs = pmones(d)) =
-    tree(Tree(d), N; ratio = ratio, dirs = dirs)
+tree(d::Int = 2, N = 0) = tree(Tree(d), N)
 
 """
-    tree_nexttree(tree, ratio, dim, dirs = pmones(T, d))
+    findnextleaves(i, tree::Tree)
 
-Returns the next iteration of `tree` with a ratio of length `ratio`.
-Where `dim` is the dimension of the tree, and `dirs` the directions generating next leaves.
+Returns the `2^d` nodes of `tree` which branched from the `i`-th node of the previous tree in the recursive construction. Assumes nodes ordered as given by [`uptree!`](@ref).
 """
-function tree_nexttree(tree::Tree{T, d}, ratio, dirs = pmones(T, d)) where {T,d}
-    return tree_nexttree(tree, tree_nextleaves(ratio, dirs))
-end
-tree_nexttree(tree::Tree{T, d}, nextleaves::Function) where {T, d} =
-    Tree{T, d}([q for p in nodes(tree) for q in nextleaves(p)],
-         tree.iter + 1
-         )
-
-"""
-    tree_nextleaves(ratio, dirs)
-
-Returns a function whose input is a point `p` and the output is an iterator which generates the next leaves of the tree starting from `p` with a ratio of length `ratio` into the directions in the iterator `dirs`.
-"""
-function tree_nextleaves(ratio, dirs)
-    # Define a function that takes a direction vector and returns the next leave in that direction
-    # f = v -> p + ratio * collect(v)
-    # Return an iterator that applies the function f to the direction vectors
-    return p -> Iterators.map(v -> p + ratio*collect(v), dirs)
-end
-
-"""
-    tree_findnextleaves(i, tree::Tree{T, d}) where {T, d}
-
-Returns the `2^d-1` nodes of `tree` which branched from the `i`-th node of the previous tree in the recursive construction.
-"""
-function tree_findnextleaves(i, tree::Tree{T, d}) where {T, d}
-    span = 2^d
+function findnextleaves(i, tree::Tree)
+    span = length(nextleaves(tree))
     init = span*(i-1)
     return nodes(tree)[init+1:init+span]
 end
