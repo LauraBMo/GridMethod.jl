@@ -1,9 +1,10 @@
 module GridMethod
 
 #Indicate modules for use
-using UnPack: @unpack
+using UnPack # @unpack, @pack!
 # using DocStringExtensions: SIGNATURES, TYPEDEF
 # using RecipesBase # For Plots recipes
+# using InvertedIndices
 
 using Combinatorics
 import LinearAlgebra as LA
