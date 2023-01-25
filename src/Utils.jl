@@ -65,7 +65,7 @@ function Δ(F)
 end
 
 """
-    D(Jx, x, n = length(x))
+    D(x)
 
 Returns the matrix difference between the identity matrix and the outer product of `x` and its conjugate transpose.
 
