@@ -2,31 +2,6 @@
 # The Han_min function takes a list H of grid_point objects, a parameter L, and a parameter C, and returns the minimum function value in H (scaled by a factor of γ = 1 - inv(C) * L), as well as the index at which this minimum value was found.
 
 """
-    cube_nthinitgrid(T=Float64, fun, dim, n; ratio = 0.5, root = tree_root(T, dim),
-                     dirs = pmones(T, dim))
-
-Returns a list of `grid_point` objects that form an initial grid with `2^n` points in each dimension.
-
-# Arguments:
- - `T` (optional): Numeric type to represent the coordinates of the points.
- - `fun`: The function to be evaluated at each point in the grid.
- - `dim`: The dimension of the grid.
- - `n`: The number of times the grid should be recursively divided.
-
-# Keyword arguments:
- - `ratio`: The ratio between the length of a branch and of the previous.
- - `root`: The root of the grid (a point in `dim`-dimensional space).
- - `coord_opt`: The possible directions in which the next points can be generated.
-"""
-function cube_nthinitgrid(::Type{T}, fun, dim, n; ratio = 0.5, root = tree_root(T, dim),
-                          dirs = pmones(T, dim)) where T
-    tree = tree(dim, n; ratio = ratio, root = root, dirs = dirs)
-    return [grid_point(fun, p, n) for p in tree]
-end
-cube_nthinitgrid(fun, dim, n; ratio = 0.5, root = tree_root(dim), dirs = pmones(dim)) =
-    cube_nthinitgrid(Float64, fun, dim, n; ratio = ratio, root = root, dirs = dirs)
-
-"""
     cube_pushsubdivided!(G, p, step, fun; dim = length(p),
                          dirs = pmones(eltype(p), dim))
 
@@ -42,11 +17,10 @@ Pushes the points obtained by subdividing the region around `p` into `G`.
  - `dim`: The dimension of the grid.
  - `coord_opt`: The possible directions in which the next points can be generated.
 """
-function cube_pushsubdivided!(G, p, step, fun; dim = length(p),
-                              dirs = pmones(eltype(p), dim))
-    ratio = eltype(p)(step_to_ratio(step + 1))
-    for q in tree_nextleaves(p, ratio; dim = dim, dirs = dirs)
-        push!(G, grid_point(fun, q, step + 1))
+function cube_pushsubdivided!(G, fun, p, branches)
+    tree = root(p,) tree([p], 1)
+    for q in [p] .+ branches
+        push!(G, GridPoint(fun, q, step + 1))
     end
 end
 
@@ -55,7 +29,7 @@ end
 
 Returns `true` if `C * step_to_ratio(step) < fx`, and `false` otherwise.
 """
-_isHan(fx, step, C) = C * step_to_ratio(step) < fx
+_isHan(fx, step, C) = C * factor(step) < fx
 
 """
     Han_min(H, L, C)

@@ -33,71 +33,38 @@ Structure representing a node in the grid.
 - `fx`: Value of the function at x.
 - `step`: Step of the subdivided point.
 """
-struct grid_point{T}
+struct GridPoint{T, d}
     x::Vector{T}
     fx::T
     step::Int
 end
 
-"""
-    grid_point(x, fx, step)
-
-Creates a new `grid_point` object with the given coordinates, function value, and step.
-Promotes the `eltype` and type of `x` and `fx` resp. Also ensures `step` is `Int`.
-"""
-function grid_point(x, fx, step)
-    U = promote_type(eltype(x), typeof(fx))
-    return grid_point{U}(convert(Vector{U}, x), convert(U, fx), Int(step))
+function GridPoint(x, fx, step)
+    T = promote_type(eltype(x), typeof(fx))
+    return GridPoint{T}(convert(Vector{T}, x), convert(T, fx), Int(step))
 end
-
+GridPoint(fun::Function, x, step) = GridPoint(x, fun(x...), step)
 # All the evaluations of the function `fun` are done via this function.
-# So, modify here for more efficient implementations.
-"""
-    grid_point(fun::Function, x, step)
 
-Creates a new `grid_point` object with the given function, coordinates, and step, where the function value is computed by calling `fun(x...)`.
-"""
-grid_point(fun::Function, x, step) = grid_point(x, fun(x...), step)
+step_to_factor(::Type{T}, step) where T = T(^(RATIO[], step)) # 1/2^i
+step_to_factor(step) = step_to_factor(Float64, step)
 
 """
-    point(g::grid_point)
-
-Returns the coordinates of the `grid_point` object `g`.
-"""
-point(g::grid_point) = g.x
-
-"""
-    fpoint(g::grid_point)
-
-Returns the function value of the `grid_point` object `g`.
-"""
-fpoint(g::grid_point) = g.fx
-
-"""
-    step_to_ratio(step) = inv(exp2(step))
-
-Converts the subdivided index `step` of a `grid_point` into the ratio of such point.
-"""
-step_to_ratio(step) = inv(exp2(step)) # 1/2^i
-
-"""
-    radius(g::grid_point)
+    factor(g::grid_point)
 
 Returns the radius of the `grid_point` object `g`, which is computed as `1/2^i`, where `i` is the step at which the point was added to the grid.
 """
-radius(g::grid_point) = step_to_ratio(g.step)
+factor(g::GridPoint{T, d}) where {T, d} = step_to_factor(T, g.step)
 
-"""
-    eltype(::grid_point{T}) where {T}
+Base.eltype(::GridPoint{T, d}) where {T, d} = T
+function Base.show(io::IO, g::GridPoint)
+    print(io, "$(eltype(g))[")
+    print(io, join(g.x, ", "))
+    print(io, "], $(g.fx), $(g.step)")
+end
 
-Returns the type of the elements in the `x` field of a `grid_point` object.
-"""
-Base.eltype(::grid_point{T}) where {T} = T
-
-function Base.show(io::IO, point::grid_point)
-    print(io, "$(eltype(point))[")
-    print(io, join(point.x, ", "))
-    print(io, "], $(point.fx), $(point.step)")
+function grid(tree::Tree{T, d}, fun) where {T, d}
+    return [GridPoint(fun, p, iter(tree)+one(Int)) for p in nodes(tree)]
 end
 
 """
@@ -120,8 +87,8 @@ Returns a list of `grid_point` objects that form a refined grid satisfying the H
  - `isfine`: A function that determines whether a point satisfies the Han condition.
  - `pushsubdivide!`: A function that pushes the points obtained by subdividing a region into a list of points.
 """
-function refine_grid(::Type{T}, fun, C, m, dim; step₀ = Int(ceil(log2(C))),
-                     G = cube_nthinitgrid(T, fun, dim, step₀), isfine = _isHan,
+function refine_grid(::Type{T}, fun, C, m, dim::Int; step₀::Int = Int(ceil(log2(C))),
+                     G = grid(tree(T, dim, step₀), fun), isfine = _isHan,
                      pushsubdivided! = cube_pushsubdivided!) where T
     H = eltype(G)[]
     while !(isempty(G)) # That is, while G is not the empty array.
@@ -131,11 +98,12 @@ function refine_grid(::Type{T}, fun, C, m, dim; step₀ = Int(ceil(log2(C))),
             @warn "Small norm" fx, m
             return m # WARN Function returning two different types
         end
-        println("Step:", step, "($(step_to_ratio(step)))", " C:", C, "--", step_to_ratio(step) * C, isfine(fx, step, C), fx)
+        println("Step:", step, "($(step_to_factor(step)))", " C:", C, "--", step_to_factor(step) * C, isfine(fx, step, C), fx)
         if isfine(fx, step, C)
             push!(H, g)
         else
-            pushsubdivided!(G, x, step, fun)
+            br = branches()
+            pushsubdivided!(G, fun, x, br)
         end
     end
     println(step₀)
@@ -146,6 +114,81 @@ refine_grid(fun, C, m, dim; step₀ = Int(ceil(log2(C))),
             pushsubdivided! = cube_pushsubdivided!) =
                 refine_grid(Float64, fun, C, m, dim, step₀ = step₀, G = G, isfine = isfine,
                             pushsubdivided! = pushsubdivided!)
+
+function findallandnot(f::Function, A)
+    I = findall(f, A)
+    return I, setdiff(eachindex(A), I)
+end
+
+function push_subdivided!_or_fine!(H, G, br, isfine, m, C, fun)
+    g = pop!(H)
+    @unpack x, fx, step = g
+    if fx < m
+        @warn "Small norm" fx, m
+        return m # WARN Function returning two different types
+    end
+    if isfine(fx, step, C)
+        push!(G, g)
+    else
+        pushsubdivided!(H, fun, x, br)
+    end
+end
+
+checknorms(g, m) = (g.fx < m)
+checknorms(G, m) = any(broadcast(checknorms, G, m))
+
+function fine_grid(fun, C, m, dim; isfine = _isHan,
+                      pushsubdivide! = cube_pushsubdivided!)
+    I = map(isfine, G)
+    G, H = G[I], G[(!).(I)]
+    step = 1
+    while !(isempty(H))
+        if checknorms(H, m)
+            @warn "Small norm" fx, m
+            return m
+        end
+        br = branches(G, i) # Compute branches for the whole set of pt with step `i`.
+        subdivide!(H, G, m, br)
+        end
+    end
+end
+
+function refine_grid!(G, fun, C, m, dim; isfine = _isHan,
+                      pushsubdivide! = cube_pushsubdivided!)
+    if checknorms(G, m)
+        @warn "Small norm" fx, m
+        return m
+    end
+    I = map(isfine, G)
+    G, H = G[I], G[(!).(I)]
+    while !(isempty(H))
+        br = branches(G, H)
+        # subdivide!(H, br)
+        # if checknorms(H, m)
+        #     @warn "Small norm" fx, m
+        #     return m
+        # end
+        # I = map(isfine, H)
+        # append!(G, H[I])
+        # H = H[J]
+        for _ in 1:length(H)
+            g = popfirst!(H)
+            @unpack x, fx, step = g
+            if fx < m
+                @warn "Small norm" fx, m
+                return m
+            end
+            if isfine(fx, step, C)
+                push!(G, g)
+            else
+                pushsubdivided!(H, fun, x, br[step])
+            end
+        end
+    end
+end
+
+eachstep(H) = unique(map(h -> h.step, H))
+branches(G, H) = Dict([(i, branches(G,i)) for i in eachstep(H)])
 
 """
     refine_grid!(G, fun, C, m, dim; isfine = _isHan,
