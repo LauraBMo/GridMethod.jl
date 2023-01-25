@@ -16,7 +16,18 @@ export norm1, C, Wnorm, K
 include("Norms.jl")
 include("Const.jl")
 
-export uptree!, tree, findnextleaves
+const RATIO = Ref{Float64}(.5)
+
+"""
+    set_default_ratio(ratio)
+
+Set default ratio for Tree structure.
+"""
+function set_default_ratio(ratio)
+    RATIO[] = ratio
+end
+
+export tree, root, uptree!, uptree, findnextleaves
 include("Tree.jl")
 
 include("Grid_Refine.jl")
