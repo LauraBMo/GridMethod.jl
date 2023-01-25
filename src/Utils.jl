@@ -22,6 +22,17 @@ function last_sval(M, ε)
     return svals[findlast(>(ε), svals)]
 end
 
+pmones(::Type{T}, ::Val{d}) where {T, d} =
+    Iterators.map(collect,
+                  Iterators.ProductIterator(
+                      ntuple(_ -> (one(T), -one(T)),
+                             Val(d),
+                             )))
+
+homothecy(m) = x -> m.*x
+translation(a) = x -> x.+a
+dilation(a, m) = translation(a)∘homothecy(m)
+
 ## From HC.jl
 """
     monomial(X, I, n = length(X))
